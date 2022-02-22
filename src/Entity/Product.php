@@ -28,9 +28,14 @@ class Product
     private $price;
 
     /**
-     * @ORM\Column(type="date")
+     * @ORM\Column(type="string")
      */
     private $date;
+
+    public function __construct()
+    {
+        $this->date = date('d/m/Y');
+    }
 
     public function getId(): ?int
     {
@@ -61,12 +66,12 @@ class Product
         return $this;
     }
 
-    public function getDate(): ?\DateTimeInterface
+    public function getDate(): string
     {
         return $this->date;
     }
 
-    public function setDate(\DateTimeInterface $date): self
+    public function setDate(string $date): self
     {
         $this->date = $date;
 
