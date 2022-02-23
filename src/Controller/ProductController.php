@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Product;
 use App\Form\ProductType;
 use App\Repository\ProductRepository;
+use Knp\Component\Pager\PaginatorInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -19,11 +20,17 @@ class ProductController extends AbstractController
     /**
      * @Route("/", name="product_index", methods={"GET", "POST"})
      */
-    public function index(ProductRepository $productRepository, Request $request): Response
+    public function index(ProductRepository $productRepository, Request $request, PaginatorInterface $paginator): Response
     {
-        $products = $productRepository->findAll();
+        $products = $productRepository->findBy([], ['id' => 'DESC']);
 
-        // 
+        // Pagination
+        $products = $paginator->paginate(
+            $products,
+            $request->query->getInt('page', 1),
+            8 //limit
+        );
+
         if (isset($_POST['input'])) {
             if ($_POST['input'] != "") {
                 $products = $productRepository->findLikeName($_POST['input']);
@@ -31,14 +38,23 @@ class ProductController extends AbstractController
                     'products' => $products,
                 ]);
             } else {
+
+                // Pagination
+                $products = $productRepository->findBy([], ['id' => 'DESC']);
+                $products = $paginator->paginate(
+                    $products,
+                    $request->query->getInt('page', 1),
+                    8 //limit
+                );
+
                 return $this->render('product/ajaxresults.html.twig', [
-                    'products' => $productRepository->findAll(),
+                    'products' => $products,
                 ]);
             }
         }
 
         return $this->render('product/index.html.twig', [
-            'products' => $productRepository->findAll(),
+            'products' => $products,
         ]);
     }
 
