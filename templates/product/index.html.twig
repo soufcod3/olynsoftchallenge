@@ -1,42 +1,91 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Product index{% endblock %}
+{% block title %}Product index
+{% endblock %}
 
 {% block body %}
-<main>
-    <h1><span>Liste</span> des produits</h1>
+	<main>
+		<h1>
+			<span>Liste</span>
+			des produits</h1>
 
-{% if products is empty %}
-    <div class="empty">
-        <h2>Aucun produit disponible</h2>
-        <a href="{{ path('product_new') }}">Ajouter un produit</a>
-    </div>
-{% else %}
-    <div class="menu">
-        <form action="" method="post">
-            <input type="search" placeholder="Tapez un nom de produit">
-        </form>
-        <a href="{{ path('product_new') }}">+</a>
-    </div>
-    <div class="container" id="output">
-    {% for product in products %}
-    <div class="product">
-        <div class="product-pic">
-            <i class="bi bi-image"></i>
-            <div class="action">
-                <a href="{{ path('product_edit', {'id': product.id}) }}"><i class="bi bi-pencil-fill"></i></i></a>
-                {{ include('product/_delete_form.html.twig') }}
-            </div>
-        </div>
-        <div class="info">
-            <h3>{{ product.name }}</h3>
-            <h4>{{ product.price }} €</h4>
-        </div>
-    </div>        
-    {% endfor %}
-    </div>
-{% endif %}
+		{% if products is empty %}
+			<div class="empty">
+				<h2>Aucun produit disponible</h2>
+				<a href="{{ path('product_new') }}">Ajouter un produit</a>
+			</div>
+		{% else %}
+			<div class="menu">
+				<form action="" method="post">
+					<input type="search" placeholder="Tapez un nom de produit" id="ajaxsearch">
+				</form>
+				<a href="{{ path('product_new') }}">+</a>
+			</div>
+			<div class="container">
+				{% for product in products %}
+					<div class="product">
+						<div class="product-pic">
+							<i class="bi bi-image"></i>
+							<div class="action">
+								<a href="{{ path('product_edit', {'id': product.id}) }}">
+									<i class="bi bi-pencil-fill"></i>
+								</i>
+							</a>
+							{{ include('product/_delete_form.html.twig') }}
+						</div>
+					</div>
+					<div class="info">
+						<h3>{{ product.name }}</h3>
+						<h4>{{ product.price }}
+							€</h4>
+					</div>
+				</div>
+			{% endfor %}
+		</div>
+	{% endif %}
 
 </main>
+
+{% endblock %}
+
+{% block ajax %}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+<script>
+$(document).ready(function () {
+
+    $("#ajaxsearch").keyup(function () {
+        var input = $(this).val();
+
+        if (input) {
+            $.ajax({
+                url: "{{ path('product_index') }}",
+                method: "POST",
+                data: {
+                    input: input
+                },
+
+                success: function (data) {
+                    $('.container').html(data);
+                    $('.container').css("display", "flex");
+                }
+            });
+        } else if (!input) {
+            $.ajax({
+                url: "{{ path('product_index') }}",
+                method: "POST",
+                data: {
+                    input: ""
+                },
+
+                success: function (data) {
+                    $('.container').html(data);
+                    $('.container').css("display", "grid");
+                }
+            });
+        }
+    });
+});
+</script>
 
 {% endblock %}

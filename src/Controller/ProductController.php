@@ -17,10 +17,26 @@ use Symfony\Component\Routing\Annotation\Route;
 class ProductController extends AbstractController
 {
     /**
-     * @Route("/", name="product_index", methods={"GET"})
+     * @Route("/", name="product_index", methods={"GET", "POST"})
      */
-    public function index(ProductRepository $productRepository): Response
+    public function index(ProductRepository $productRepository, Request $request): Response
     {
+        $products = $productRepository->findAll();
+
+        // 
+        if (isset($_POST['input'])) {
+            if ($_POST['input'] != "") {
+                $products = $productRepository->findLikeName($_POST['input']);
+                return $this->render('product/ajaxresults.html.twig', [
+                    'products' => $products,
+                ]);
+            } else {
+                return $this->render('product/ajaxresults.html.twig', [
+                    'products' => $productRepository->findAll(),
+                ]);
+            }
+        }
+
         return $this->render('product/index.html.twig', [
             'products' => $productRepository->findAll(),
         ]);
@@ -73,11 +89,26 @@ class ProductController extends AbstractController
      */
     public function delete(Request $request, Product $product, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$product->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $product->getId(), $request->request->get('_token'))) {
             $entityManager->remove($product);
             $entityManager->flush();
         }
 
         return $this->redirectToRoute('product_index', [], Response::HTTP_SEE_OTHER);
+    }
+
+    /**
+     * @Route("/search", name="product_search")
+     */
+    public function searchAction()
+    {
+        echo "Keep going...";
+    }
+
+    public function getRealEntities($products)
+    {
+        foreach ($products as $product) {
+            $realEntities[$product->getId()] = [$product->getName()];
+        }
     }
 }
